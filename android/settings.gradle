@@ -1,0 +1,3 @@
+rootProject.name = 'NewMall'
+
+include ':app'
