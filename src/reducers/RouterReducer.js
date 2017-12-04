@@ -16,7 +16,6 @@ export const goto = createAction(NAVIGATE, (routeName, params) => {
     return NavigationActions.navigate({routeName: routeName, params: params})
 });
 export const goBack = createAction(BACK, (routeName,params) => {
-    console.log('====>', routeName);
     if (routeName) {
         if(params){
             return {routeName: routeName, params: params};
