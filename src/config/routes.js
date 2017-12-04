@@ -2,15 +2,16 @@ import CardStackStyleInterpolator from 'react-navigation/src/views/CardStack/Car
 import {
     Animated,
 } from "react-native";
-
-import Index from '../components/test/TestUserForRedux';
-import Index2 from '../components/test/TestUserForRedux2';
-import Index3 from '../components/test/TestUserForRedux3';
+import Index from '../components/test/Test1';
+import Index2 from '../components/test/Test2';
+import Index3 from '../components/test/Test3';
+import Index4 from '../components/test/Test4';
 
 export const routes = {
     Home: {screen: Index},
     Home2: {screen: Index2},
     Home3: {screen: Index3},
+    Home4: {screen: Index4},
 };
 
 export const routerConfig =
@@ -32,6 +33,6 @@ export const routerConfig =
         }),
 
         headerMode: 'screen', // 导航栏的显示模式, screen: 有渐变透明效果, float: 无透明效果, none: 隐藏导航栏
-        onTransitionStart: () => {console.log('导航栏切换开始');},
-        onTransitionEnd: () => {console.log('导航栏切换结束');}
+        onTransitionStart: () => {console.log('screen切换开始');},
+        onTransitionEnd: () => {console.log('screen切换结束');}
     };
