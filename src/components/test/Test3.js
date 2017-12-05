@@ -23,7 +23,7 @@ class TestUser extends Component{
                 <Image source={exampleLocalImage} style={{width:100,height:100}}/>
                 <Text style={{marginTop:10}} onPress={()=>dispatch(saveUser({sex:'女'}))}>你可以点击这里改变你的性别</Text>
                 <Text>当前性别:{sex}</Text>
-                <Text style={{marginTop:10}} onPress={()=>dispatch(gotoAndClose('Home4','Home2'))}>跳转第四个界面</Text>
+                <Text style={{marginTop:10}} onPress={()=>dispatch(gotoAndClose('Home4',['Home2','Home3'],{aaa:'sssss'}))}>跳转第四个界面</Text>
                 <Text style={{marginTop:10}} onPress={()=>dispatch(goBack())}>返回上一个界面</Text>
                 <Text style={{marginTop:10}} onPress={()=>dispatch(goBack('Home'))}>返回第一个界面</Text>
                 <Text onPress={()=>dispatch(goBack('Home',{aaa:'sssss'}))}>带参数返回第一个页面</Text>

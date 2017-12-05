@@ -19,7 +19,7 @@ class TestUser extends Component{
 
     render() {
         const {dispatch,sex} = this.props;
-        // console.log('第二个界面>' + JSON.stringify(this.props.navigation));
+        console.log('第4个界面>' + JSON.stringify(this.props.navigation));
         // console.log('第二个界面>' + JSON.stringify(this.props.navigation.dispatch));
         return (
             <View>

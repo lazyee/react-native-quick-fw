@@ -37,11 +37,11 @@ export const uri = createAction(URI);
 /**
  * 跳转并且关闭某些历史界面
  */
-export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, closeTargetRouteName, params) => {
-    if (!closeTargetRouteName) {//如果不存在关闭的页面，直接走跳转逻辑
+export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, closeTargetRouteNames, params) => {
+    if (!closeTargetRouteNames) {//如果不存在关闭的页面，直接走跳转逻辑
         return NavigationActions.navigate({routeName: targetRouteName, params: params})
     } else {
-        return {targetRouteName, closeTargetRouteName, params};
+        return {targetRouteName, closeTargetRouteNames, params};
     }
 });
 
@@ -64,8 +64,8 @@ const reducer = handleActions({
             }
             break;
             case GOTO_AND_CLOSE:
-                let {targetRouteName, closeTargetRouteName, params} = payload;
-                return _gotoAndClose(state, targetRouteName, closeTargetRouteName, params);
+                let {targetRouteName, closeTargetRouteNames, params} = payload;
+                return _gotoAndClose(state, targetRouteName, closeTargetRouteNames, params);
             default:
                 action = action.payload;
                 break;
@@ -128,19 +128,18 @@ _goBackToTargetRouteWithParams = (state,routeName,params)=>{
  * 跳转新的页面并且关闭指定页面和之后的页面
  * @param state
  * @param targetRouteName
- * @param closeTargetRouteName
+ * @param closeTargetRouteNames
  * @param params
  * @returns {{}}
  */
-_gotoAndClose = (state, targetRouteName, closeTargetRouteName, params) => {
+_gotoAndClose = (state, targetRouteName, closeTargetRouteNames, params) => {
     let tempState = Object.assign({},state);
     let routeActions = [];
-    for (let i = 0; i < tempState.routes.length; i++) {
-        let item = tempState.routes[i];
-        if (item.routeName === closeTargetRouteName) break;
-        routeActions.push(NavigationActions.navigate(item));
-    }
-
+    tempState.routes.map(item =>{
+        if(closeTargetRouteNames.indexOf(item.routeName) === -1){
+            routeActions.push(NavigationActions.navigate(item));
+        }
+    });
     routeActions.push(NavigationActions.navigate({routeName: targetRouteName,params: params}));
     let routeIndex = routeActions.length - 1>0?routeActions.length - 1:0;
     let resetAction = NavigationActions.reset({
