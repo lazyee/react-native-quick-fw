@@ -11,9 +11,19 @@ const RESET = 'Navigation/RESET';
 const SET_PARAMS = 'Navigation/SET_PARAMS';
 const URI = 'Navigation/URI';
 const GOTO_AND_CLOSE = "GOTO_AND_CLOSE";//跳转并且关闭某些历史界面
-
+let cangoto = true;//防止切换切换的误操作
 export const goto = createAction(NAVIGATE, (routeName, params) => {
-    return NavigationActions.navigate({routeName: routeName, params: params})
+    let action = undefined;
+    if(cangoto){
+        action = NavigationActions.navigate({routeName: routeName, params: params});
+        setTimeout(()=>{
+            cangoto = true;
+        },500);
+    }
+    if(action){
+        cangoto = false;
+        return action;
+    }
 });
 export const goBack = createAction(BACK, (routeName,params) => {
     if (routeName) {
@@ -62,7 +72,7 @@ const reducer = handleActions({
                     return _goBackToTargetRouteWithParams(state,'', payload.params);
                 }
             }
-            break;
+                break;
             case GOTO_AND_CLOSE:
                 let {targetRouteName, closeTargetRouteNames, params} = payload;
                 return _gotoAndClose(state, targetRouteName, closeTargetRouteNames, params);
@@ -70,7 +80,10 @@ const reducer = handleActions({
                 action = action.payload;
                 break;
         }
-        const newState = AppNavigator.router.getStateForAction(action, state);
+        let newState = null;
+        if(action){
+            newState = AppNavigator.router.getStateForAction(action, state);
+        }
         return newState || state;
     }
 }, defaultState);
