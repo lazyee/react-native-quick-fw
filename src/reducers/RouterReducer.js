@@ -45,13 +45,13 @@ export const setParams = createAction(SET_PARAMS);
 export const uri = createAction(URI);
 
 /**
- * 跳转并且关闭某些历史界面
+ * 跳转并且关闭指定的界面
  */
-export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, closeTargetRouteNames, params) => {
-    if (!closeTargetRouteNames) {//如果不存在关闭的页面，直接走跳转逻辑
+export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, keepRouteNames, params) => {
+    if (!keepRouteNames) {//如果不存在关闭的页面，直接走跳转逻辑
         return NavigationActions.navigate({routeName: targetRouteName, params: params})
     } else {
-        return {targetRouteName, closeTargetRouteNames, params};
+        return {targetRouteName, keepRouteNames, params};
     }
 });
 
@@ -74,8 +74,8 @@ const reducer = handleActions({
             }
                 break;
             case GOTO_AND_CLOSE:
-                let {targetRouteName, closeTargetRouteNames, params} = payload;
-                return _gotoAndClose(state, targetRouteName, closeTargetRouteNames, params);
+                let {targetRouteName, keepRouteNames, params} = payload;
+                return _gotoAndClose(state, targetRouteName, keepRouteNames, params);
             default:
                 action = action.payload;
                 break;
@@ -124,7 +124,7 @@ _goBackToTargetRouteWithParams = (state,routeName,params)=>{
     tempState.routes.map((item,index) =>{
         if(index === (tempState.index)){
             actions.push(NavigationActions.navigate({routeName: item.routeName, params: params}));
-        }else if(index !== tempState.routes.length - 1){
+        }else if(index < tempState.routes.length - 1){
             actions.push(NavigationActions.navigate({routeName:item.routeName}))
         }
     });
@@ -133,23 +133,22 @@ _goBackToTargetRouteWithParams = (state,routeName,params)=>{
         index: tempState.index,
         actions: actions
     });
-
     return AppNavigator.router.getStateForAction(resetAction, tempState);
 };
 
 /**
- * 跳转新的页面并且关闭指定页面和之后的页面
+ * 跳转新的页面并且关闭指定页面
  * @param state
  * @param targetRouteName
- * @param closeTargetRouteNames
+ * @param keepRouteNames array
  * @param params
  * @returns {{}}
  */
-_gotoAndClose = (state, targetRouteName, closeTargetRouteNames, params) => {
+_gotoAndClose = (state, targetRouteName, keepRouteNames, params) => {
     let tempState = Object.assign({},state);
     let routeActions = [];
     tempState.routes.map(item =>{
-        if(closeTargetRouteNames.indexOf(item.routeName) === -1){
+        if(keepRouteNames.indexOf(item.routeName) > -1){
             routeActions.push(NavigationActions.navigate(item));
         }
     });
