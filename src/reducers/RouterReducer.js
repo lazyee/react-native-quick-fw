@@ -10,33 +10,52 @@ const NAVIGATE = 'Navigation/NAVIGATE';
 const RESET = 'Navigation/RESET';
 const SET_PARAMS = 'Navigation/SET_PARAMS';
 const URI = 'Navigation/URI';
-const GOTO_AND_CLOSE = "GOTO_AND_CLOSE";//跳转并且关闭某些历史界面
-let cangoto = true;//防止切换切换的误操作
+const GOTO_AND_CLOSE = 'GOTO_AND_CLOSE';//跳转并且关闭某些历史界面
+
+//防止切换切换的误操作
+const DONT_DO_ANYTHING = 'DONT_DO_ANYTHING';
+let canTap = true;
 export const goto = createAction(NAVIGATE, (routeName, params) => {
     let action = undefined;
-    if(cangoto){
+    if(canTap){
         action = NavigationActions.navigate({routeName: routeName, params: params});
         setTimeout(()=>{
-            cangoto = true;
+            canTap = true;
         },500);
     }
     if(action){
-        cangoto = false;
+        canTap = false;
         return action;
+    }else{
+        return DONT_DO_ANYTHING;
     }
 });
 export const goBack = createAction(BACK, (routeName,params) => {
-    if (routeName) {
-        if(params){
-            return {routeName: routeName, params: params};
+    let action = undefined;
+    if(canTap) {
+        if (routeName) {
+            if (params) {
+                action = {routeName: routeName, params: params};
+            } else if (typeof routeName === 'object' && routeName) {
+                params = routeName;
+                action = {params: params};
+            } else {
+                action = {routeName: routeName};
+            }
+
+        } else {
+            action = NavigationActions.back();
         }
-        if(typeof routeName === 'object' && routeName){
-            params = routeName;
-            return {params: params};
-        }
-        return {routeName: routeName};
-    } else {
-        return NavigationActions.back();
+
+        setTimeout(()=>{
+            canTap = true;
+        },500);
+    }
+    if(action){
+        canTap = false;
+        return action;
+    }else{
+        return DONT_DO_ANYTHING;
     }
 });
 export const init = createAction(INIT);
@@ -58,6 +77,7 @@ export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, keepR
 const reducer = handleActions({
     [combineActions(goto, goBack, init, reset, setParams, uri,gotoAndClose)]: (state, action) => {
         let payload = action.payload;
+        if(payload === DONT_DO_ANYTHING)return state;
         switch (action.type){
             case BACK:{
                 if(!payload)break;
