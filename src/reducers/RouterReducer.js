@@ -64,15 +64,9 @@ export const setParams = createAction(SET_PARAMS);
 export const uri = createAction(URI);
 
 /**
- * 跳转并且关闭指定的界面
+ * 跳转并且只保留指定的界面
  */
-export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, keepRouteNames, params) => {
-    if (!keepRouteNames) {//如果不存在关闭的页面，直接走跳转逻辑
-        return NavigationActions.navigate({routeName: targetRouteName, params: params})
-    } else {
-        return {targetRouteName, keepRouteNames, params};
-    }
-});
+export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, keepRouteNames, params) => ({targetRouteName, keepRouteNames, params}));
 
 const reducer = handleActions({
     [combineActions(goto, goBack, init, reset, setParams, uri,gotoAndClose)]: (state, action) => {
@@ -95,7 +89,12 @@ const reducer = handleActions({
                 break;
             case GOTO_AND_CLOSE:
                 let {targetRouteName, keepRouteNames, params} = payload;
-                return _gotoAndClose(state, targetRouteName, keepRouteNames, params);
+                if (!keepRouteNames) {//如果不存在要保留的页面，直接走跳转逻辑
+                    action = NavigationActions.navigate({routeName: targetRouteName, params: params})
+                } else {
+                    return _gotoAndClose(state, targetRouteName, keepRouteNames, params);
+                }
+                break;
             default:
                 action = action.payload;
                 break;
@@ -157,7 +156,7 @@ _goBackToTargetRouteWithParams = (state,routeName,params)=>{
 };
 
 /**
- * 跳转新的页面并且关闭指定页面
+ * 跳转新的页面并且只保留指定的页面
  * @param state
  * @param targetRouteName
  * @param keepRouteNames array
