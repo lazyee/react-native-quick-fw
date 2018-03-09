@@ -22,6 +22,7 @@ export const routerConfig =
             cardStack: {
                 gesturesEnabled: false
             },
+            gesturesEnabled:true,
         },
         // mode: 'card',  // 页面切换模式, 左右是card(相当于iOS中的push效果), 上下是modal(相当于iOS中的modal效果)
         transitionConfig: () => ({//设置页面切换动画

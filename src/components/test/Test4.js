@@ -23,9 +23,6 @@ class TestUser extends Component{
         // console.log('第二个界面>' + JSON.stringify(this.props.navigation.dispatch));
         return (
             <View>
-                <Image source={exampleLocalImage} style={{width:100,height:100}}/>
-                <Text style={{marginTop:100}} onPress={()=>dispatch(saveUser({sex:'女'}))}>你可以点击这里改变你的性别</Text>
-                <Text>当前性别:{sex}</Text>
                 <Text>界面4</Text>
                 <Text onPress={()=>dispatch(goto('Home3'))}>跳转到第三个页面</Text>
                 <Text onPress={()=>dispatch(goBack())}>点击返回上一个页面</Text>
