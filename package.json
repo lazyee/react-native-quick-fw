@@ -22,7 +22,9 @@
 		"redux": "^3.7.2",
 		"redux-actions": "^2.2.1",
 		"redux-persist": "^5.4.0",
-		"redux-thunk": "^2.2.0"
+		"redux-thunk": "^2.2.0",
+		"accounting": "^0.4.1",
+		"react-native-iphone-x-helper": "^1.0.1"
 	},
 	"devDependencies": {
 		"babel-jest": "21.2.0",

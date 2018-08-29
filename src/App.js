@@ -1,16 +1,29 @@
 import React, {Component} from 'react';
-import {configureStore} from './app/Store';
+import {configureStore} from './config/ReduerConfig';
 import {Provider} from 'react-redux';
-import AppWithNavigationState from './components/routers/AppWithNavigationState';
+import AppWithNavigationState, {initAppNavigator} from './components/routers/AppWithNavigationState';
 import {PersistGate} from "../node_modules/redux-persist/es/integration/react";
+import {updateHttpConfig} from "./app/LRequest";
 
-const {persistor, store} = configureStore();
+let storeConfig = null;
 
 export default class App extends Component {
     constructor(props) {
         super(props);
+        console.log('=======');
+        console.log(this.props);
+        console.log('=======');
+
+        updateHttpConfig(props);
+        // if(!this.props.token){
+        //     initAppNavigator('Login');//此方法必须最先调用，否则路由配置会出问题
+        // }else{
+        initAppNavigator(props.initialPage);//此方法必须最先调用，否则路由配置会出问题
+        // }
+        storeConfig = configureStore();
+
         this.state = {
-            store: store,
+            store: storeConfig.store,
         };
     }
 
@@ -19,7 +32,7 @@ export default class App extends Component {
 
         return (
             <Provider store={this.state.store}>
-                <PersistGate persistor={persistor}>
+                <PersistGate persistor={storeConfig.persistor}>
                 <AppWithNavigationState/>
                 </PersistGate>
             </Provider>

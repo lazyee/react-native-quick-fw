@@ -1,18 +1,30 @@
 import React, {Component} from 'react';
-import {StackNavigator, addNavigationHelpers} from 'react-navigation';
+import {addNavigationHelpers, StackNavigator} from 'react-navigation';
 import {connect} from 'react-redux';
-import {routes, routerConfig} from '../../config/routes';
+import {getRouterConfig, routeConfig} from '../../config/RouteConfig';
 import {goBack} from '../../reducers/RouterReducer';
-import {
-    Platform,
-    BackHandler
-} from 'react-native';
+import {BackHandler, Platform, View} from 'react-native';
+import LoadingDialog from "../../widgets/dialog/LoadingDialog";
+import {configDispatchFunc} from "../../app/LRequest";
+import LoginInvalidDialog from "../../widgets/dialog/LoginInvalidDialog";
 
-export const AppNavigator = StackNavigator(routes, routerConfig);
+
+let AppNavigator = null;
+// let AppNavigator = StackNavigator(routeConfig, getRouterConfig(getInitPage('123')));
+
+export function initAppNavigator(initialPage) {
+    AppNavigator = StackNavigator(routeConfig, getRouterConfig(initialPage));
+}
+
+export function getStateForAction(action,state){
+    action = AppNavigator.router.getStateForAction(action,state);
+    return action;
+}
+
 class AppWithNavigationState extends Component {
     constructor(props) {
         super(props);
-
+        configDispatchFunc(this.props.dispatch);
     }
 
     componentDidMount() {
@@ -28,7 +40,6 @@ class AppWithNavigationState extends Component {
                 }
             );
         }
-
     }
 
     componentWillUnmount() {
@@ -39,17 +50,21 @@ class AppWithNavigationState extends Component {
 
     render() {
         const {nav, dispatch} = this.props;
+
         return (
-            <AppNavigator
-                navigation={addNavigationHelpers({dispatch, state: nav})}
-            />
+            <View style={{flex:1}}>
+                <LoginInvalidDialog/>
+                <LoadingDialog/>
+                <AppNavigator navigation={addNavigationHelpers({dispatch, state: nav})}/>
+            </View>
+
         )
     }
 }
 
 selector = (state) => {
     return {
-        nav: state.nav
+        nav: state.nav,
     }
 };
 export default connect(selector)(AppWithNavigationState);

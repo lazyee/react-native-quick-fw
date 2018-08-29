@@ -1,7 +1,11 @@
 import UserReducer from './UserReducer';
-import RouterReducer from './RouterReducer';
+import {getRouterReducer} from './RouterReducer';
+import CacheReducer from './CacheReducer';
 
-export default {
-    userStore: UserReducer,
-    nav:RouterReducer,
+export function getReducer() {
+    return {
+        userStore: UserReducer,
+        nav:getRouterReducer(),
+        cacheStore:CacheReducer,
+    }
 };

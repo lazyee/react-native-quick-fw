@@ -1,8 +1,10 @@
-import {createAction, combineActions, handleActions} from 'redux-actions';
-import {AppNavigator} from '../components/routers/AppWithNavigationState';
+import {combineActions, createAction, handleActions} from 'redux-actions';
+import {getStateForAction} from '../components/routers/AppWithNavigationState';
 import {NavigationActions} from 'react-navigation';
 
-let defaultState = AppNavigator.router.getStateForAction({routeName: 'Home'});
+// let defaultState = {"index":0,"routes":[{"routeName":"MyComment","key":"Init-id-1528958034699-0"}]};
+// let defaultState = getStateForAction({routeName: 'MyComment'});
+
 
 const BACK = 'Navigation/BACK';
 const INIT = 'Navigation/INIT';
@@ -68,44 +70,51 @@ export const uri = createAction(URI);
  */
 export const gotoAndClose = createAction(GOTO_AND_CLOSE, (targetRouteName, keepRouteNames, params) => ({targetRouteName, keepRouteNames, params}));
 
-const reducer = handleActions({
-    [combineActions(goto, goBack, init, reset, setParams, uri,gotoAndClose)]: (state, action) => {
-        let payload = action.payload;
-        if(payload === DONT_DO_ANYTHING)return state;
-        switch (action.type){
-            case BACK:{
-                if(!payload)break;
-                if(payload.routeName && payload.params){
-                    return _goBackToTargetRouteWithParams(state,payload.routeName,payload.params);
-                }
-                if (payload.routeName) {
-                    return _goBackToTargetRoute(state, payload.routeName);
-                }
+export function getRouterReducer(){
+    let reducer = handleActions({
+        [combineActions(goto, goBack, init, reset, setParams, uri,gotoAndClose)]: (state, action) => {
+            let payload = action.payload;
+            if(payload === DONT_DO_ANYTHING)return state;
+            switch (action.type){
+                case BACK:{
+                    if(!payload)break;
+                    if(payload.routeName && payload.params){
+                        return _goBackToTargetRouteWithParams(state,payload.routeName,payload.params);
+                    }
+                    if (payload.routeName) {
+                        return _goBackToTargetRoute(state, payload.routeName);
+                    }
 
-                if (payload.params) {
-                    return _goBackToTargetRouteWithParams(state,'', payload.params);
+                    if (payload.params) {
+                        return _goBackToTargetRouteWithParams(state,'', payload.params);
+                    }
                 }
+                    break;
+                case GOTO_AND_CLOSE:
+                    let {targetRouteName, keepRouteNames, params} = payload;
+                    if (!keepRouteNames) {//如果不存在要保留的页面，直接走跳转逻辑
+                        action = NavigationActions.navigate({routeName: targetRouteName, params: params})
+                    } else {
+                        return _gotoAndClose(state, targetRouteName, keepRouteNames, params);
+                    }
+                    break;
+                default:
+                    action = action.payload;
+                    break;
             }
-                break;
-            case GOTO_AND_CLOSE:
-                let {targetRouteName, keepRouteNames, params} = payload;
-                if (!keepRouteNames) {//如果不存在要保留的页面，直接走跳转逻辑
-                    action = NavigationActions.navigate({routeName: targetRouteName, params: params})
-                } else {
-                    return _gotoAndClose(state, targetRouteName, keepRouteNames, params);
-                }
-                break;
-            default:
-                action = action.payload;
-                break;
+            let newState = null;
+            if(action){
+                // newState = AppNavigator.router.getStateForAction(action, state);
+                newState =  getStateForAction(action,state);
+            }
+            return newState || state;
         }
-        let newState = null;
-        if(action){
-            newState = AppNavigator.router.getStateForAction(action, state);
-        }
-        return newState || state;
-    }
-}, defaultState);
+    }, getStateForAction({routeName: 'MyComment'}));
+    // }, defaultState);
+
+    return reducer;
+}
+
 
 /**
  * 返回第一个匹配的界面，匹配的页面后面的页面将会被已移除
@@ -152,7 +161,8 @@ _goBackToTargetRouteWithParams = (state,routeName,params)=>{
         index: tempState.index,
         actions: actions
     });
-    return AppNavigator.router.getStateForAction(resetAction, tempState);
+    // return AppNavigator.router.getStateForAction(resetAction, tempState);
+    return getStateForAction(resetAction,tempState);
 };
 
 /**
@@ -177,7 +187,8 @@ _gotoAndClose = (state, targetRouteName, keepRouteNames, params) => {
         index: routeIndex,
         actions: routeActions
     });
-    return AppNavigator.router.getStateForAction(resetAction, tempState);
+    // return AppNavigator.router.getStateForAction(resetAction, tempState);
+    return getStateForAction(resetAction,tempState);
 };
 
-export default reducer;
+// export default reducer;

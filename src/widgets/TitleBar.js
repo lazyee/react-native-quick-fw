@@ -1,21 +1,13 @@
 import React, {Component} from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    Dimensions,
-    Platform,
-    Image,
-    TouchableOpacity,
-} from 'react-native';
+import {Image, NativeModules, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View,} from 'react-native';
 
-import {
-    whiteBackIco,
-    blackBackIco,
-    shareIco
-} from '../constraint/Image';
+import {backIco, shareIco} from '../constraint/Image';
+import {connect} from 'react-redux';
+import {mainColor} from '../constraint/Colors';
+import {goBack} from '../reducers/RouterReducer';
+import {SCREEN_WIDTH} from "../utils/AppUtil";
+import IPhoneXTop from "./iphonex/IPhoneXTop";
 
-const {width} = Dimensions.get('window');
 
 class TitleBar extends Component {
     constructor(props) {
@@ -26,97 +18,137 @@ class TitleBar extends Component {
         title: "标题",
         onlyTitle: false,
         hideRight: true,
-        isWhiteBackIco:false,
+        hideLeft: false,
+        showShadow:true,
         customBarStyle: {},
         customBarTextStyle: {},
-        clickRightIcoCallback:null
+        customRightView: null,
+        customLeftView: null,
+        onBackViewClick: null,//function
+        onRightViewClick: null,//function
+        statusBarBackgroundColor:'black',
+        statusBarStyle:Platform.OS === 'android'?'light-content':'dark-content'
     };
 
-    /**
-     * 返回上一个界面
-     * @private
-     */
-    _goBack() {
-        if (this.props.navigation) {
-            this.props.navigation.goBack();
-        }
-    }
-
     render() {
-        let backImage = this.props.isWhiteBackIco?(
-            <Image source={{uri:whiteBackIco}} style={styles.backIco}/>
-        ):(
-            <Image source={{uri:blackBackIco}} style={styles.backIco}/>
-        );
-        let title = this.props.onlyTitle ? null : (
-            <TouchableOpacity
-                onPress={() => this._goBack()}>
-                <View style={styles.back}>
-                    {backImage}
-                </View>
-            </TouchableOpacity>
-        );
-        let titleRight = (this.props.onlyTitle || this.props.hideRight) ? null : (
-            <View style={styles.rightLayout}>
+        const {customLeftView,dispatch,showShadow, onBackViewClick, onRightViewClick} = this.props;
+        let leftView = (this.props.hideLeft || this.props.onlyTitle) ? <View style={styles.leftViewLayout}/> : (
+
+            <View style={styles.leftViewLayout}>
+
                 <TouchableOpacity
-                    style={styles.back}
-                    onPress={this.props.clickRightIcoCallback}>
-                        <Image source={{uri:shareIco}} style={styles.backIco}/>
+                    activeOpacity={0.7}
+                    style={styles.icoLayout}
+                    onPress={() => {
+                        if (onBackViewClick) {
+                            onBackViewClick();
+                        } else {
+                            let {nav, dispatch} = this.props;
+                            if (nav.index === 0) {
+                                if(NativeModules.NativeControlModule){
+                                    NativeModules.NativeControlModule.finish();
+                                }
+                            }
+                            dispatch(goBack());
+                        }
+                    }}>
+                    {customLeftView?customLeftView():<Image source={backIco} style={styles.backIco}/>}
+                </TouchableOpacity>
+            </View>
+        );
+        let rightView = (this.props.onlyTitle || this.props.hideRight) ? <View style={styles.rightViewLayout}/> : (
+            <View style={styles.rightViewLayout}>
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={styles.icoLayout}
+                    onPress={onRightViewClick}>
+                    {
+                        this.props.customRightView ? this.props.customRightView() : (
+                            <Image source={{uri: shareIco}} style={styles.backIco}/>
+                        )
+                    }
                 </TouchableOpacity>
             </View>
         );
 
+        const backgroundColor  = this.props.customBarStyle.backgroundColor;
+        const backgroundColorStyle = backgroundColor?{backgroundColor}:{};
+
         return (
-            <View style={[styles.header, this.props.customBarStyle]}>
-                <View style={styles.titleLayout}>
-                    <Text style={[styles.titleText, this.props.customBarTextStyle]}>{this.props.title}</Text>
+            <View style={[styles.header,(showShadow?styles.shadow:null),this.props.style,this.props.customBarStyle]}>
+                <StatusBar
+                    backgroundColor={this.props.statusBarBackgroundColor}
+                    translucent={false}
+                    barStyle={this.props.statusBarStyle}
+                />
+                <IPhoneXTop style={backgroundColorStyle?backgroundColorStyle:{}}/>
+                <View style={styles.content}>
+
+                    <View style={styles.titleLayout}>
+                        <Text numberOfLines={1} style={[styles.titleText, this.props.customBarTextStyle]}>{this.props.title}</Text>
+                    </View>
+                    {leftView}
+                    {rightView}
                 </View>
-                {title}
-                {titleRight}
             </View>
+
         );
     }
 }
 
 const titleBarHeight = 45;
-const topValue = 44;
 const styles = StyleSheet.create({
     header: {
-        paddingTop: Platform.OS === 'android' ? 0 : topValue,
-        height: Platform.OS === 'android' ? titleBarHeight : (topValue + titleBarHeight),
-        flexDirection: 'row',
-        position: 'relative',
         backgroundColor: 'white',
+        // borderBottomWidth:0.5,
+        // borderBottomColor:line,
+
     },
-    back: {
-        width: titleBarHeight,
+    shadow:{
+        shadowColor:'gray',
+        shadowOffset:{height:2,width:2},
+        shadowRadius:3,
+        shadowOpacity:0.2,
+        elevation: 3,
+    },
+
+    content: {
+        flexDirection: 'row',
+    },
+    icoLayout: {
+
         height: titleBarHeight,
-        padding: 15,
+        padding: 10,
+        justifyContent: 'center',
+        alignItems:'center',
     },
     backIco: {
-        width: 15,
-        height: 15,
-        resizeMode:'contain',
+        width: 20,
+        height: 20,
+        resizeMode: 'contain',
     },
     titleLayout: {
-        top: Platform.OS === 'android' ? 0 : topValue,
-        position: 'absolute',
         height: titleBarHeight,
-        width: width,
+        width: SCREEN_WIDTH - titleBarHeight * 2,
         justifyContent: 'center',
+        flex:1,
 
     },
     titleText: {
-        color: 'black',
-        fontSize: 16,
+        color: mainColor,
+        fontSize: 17,
         textAlign: 'center',
     },
-    rightLayout: {
-        top: Platform.OS === 'android' ? 0 : topValue,
-        right: 0,
-        width: 60,
-        left:width-45,
-        position: 'absolute',
+    leftViewLayout: {
+        position:'absolute',
+        width: titleBarHeight,
+        height: titleBarHeight,
+        justifyContent: 'center',
+    },
+    rightViewLayout: {
+        position:'absolute',
+        right:0,
+        // width: titleBarHeight,
         height: titleBarHeight,
         justifyContent: 'center',
     },
@@ -127,4 +159,9 @@ const styles = StyleSheet.create({
     }
 });
 
-module.exports = TitleBar;
+selector=(state)=>{
+  return {
+      nav:state.nav
+  }
+};
+export default connect(selector)(TitleBar);
